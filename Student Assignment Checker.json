@@ -1,0 +1,290 @@
+{
+  "name": "Student Assignment Checker",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "q": "=has:attachment subject:\"Assignment test\""
+        },
+        "options": {
+          "dataPropertyAttachmentsPrefixName": "attachment_",
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "df71c924-0999-484b-a898-e120256f4ddd",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "8j3ETJXLFX1EyBcz",
+          "name": "Gmail account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "={{ $json.from.text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "39f15200-e6ec-4147-9157-afdaa4275b95",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Name: Ali\nRoll No: 10\nSubject: My Summer Vacation\n\nI went to village in summer vacation. I played with my friends and helped my parents. I learned many new things.",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        448,
+        0
+      ],
+      "id": "358c2dd5-621c-4a68-959a-14a3d28f1864",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        384,
+        208
+      ],
+      "id": "db212b01-4b18-4002-b45a-7ed2e3834d81",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst text = input.text || input.data || input.content || \"\";\n\nif (!text) {\n  throw new Error(\"Text nahi mila\");\n}\n\nconst parts = text.split(/Assignment/i).filter(p => p.trim().length > 20);\n\nreturn parts.map((p, i) => {\n  return {\n    json: {\n      assignment_no: i + 1,\n      assignment_text: p.trim()\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        0
+      ],
+      "id": "5a914e49-eda8-44da-b956-ce194972b778",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "16JilzGQN78SCACQLAlM9e_lcgPZBpjhCieaHt6M_9aM",
+          "mode": "list",
+          "cachedResultName": "Assignment Result",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16JilzGQN78SCACQLAlM9e_lcgPZBpjhCieaHt6M_9aM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16JilzGQN78SCACQLAlM9e_lcgPZBpjhCieaHt6M_9aM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "email": "sadiawaheed3131@gmail.com",
+            "marks": "={{ $json.marks }}",
+            "feedback": "={{ $json.feedback }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "marks",
+              "displayName": "marks",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "feedback",
+              "displayName": "feedback",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1040,
+        0
+      ],
+      "id": "fa0d9fb6-a712-42fb-9421-cf20412885c9",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "xLLy2hSO6j2SEu95",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "sadiawaheed3131@gmail.com",
+        "subject": "=Assignment Checked - You got {{ $json.marks }}/10",
+        "message": "=Hi,  Your assignment has been checked.  Marks: {{ $json.marks }}/10 Status: {{ $json.status }}  Feedback: {{ $json.feedback }}  Best of luck!",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1264,
+        0
+      ],
+      "id": "2ceaaa17-54f7-4a32-a09e-0a8b27f17abf",
+      "name": "Send a message",
+      "webhookId": "36bfa604-cd08-40de-abaa-9eb3bddabf62",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "FkuSOuL4OQAyCUlY",
+          "name": "Gmail account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "0f63ffc1-28bd-4648-813d-ed49f9da5c9d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d98c48b2b8559b6259779f49d39f769d2f3dee87cd82344180c81f28d3f61c6a"
+  },
+  "nodeGroups": [],
+  "id": "qlPV4DGDtejgPF5b",
+  "tags": []
+}
